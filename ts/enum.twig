@@ -1,0 +1,7 @@
+enum {{ enum.name }} {
+
+{% for option in enum.options %}
+    {{ option.code | upper }} = "{{ option.value }}",
+{% endfor %}
+
+}
