@@ -1,0 +1,81 @@
+
+// —————————————————————————————————————————————————————————————————
+// —— {{model.domainModel.name}}s (input)
+// —————————————————————————————————————————————————————————————————
+/**
+ * @Route("/api/{{model.domainModel.name| lower}}/add"
+ * , name="api_{{model.domainModel.name| lower}}_add"
+ * , methods={"POST","PUT"})
+ * @param Request $request
+ * @return Response
+ */
+public function add{{model.domainModel.name| capitalize}}(Request $request)
+{
+    $jsonCommand = json_decode($request->request->get('{{model.domainModel.name| lower}}'));
+    $response = $this->inputBus->add{{model.domainModel.name| capitalize}}($jsonCommand);
+    return new JsonResponse($response, 200, $this->apiAccess);
+}
+
+/**
+* @Route("/api/{{model.domainModel.name| lower}}/{id}"
+* , name="api_{{model.domainModel.name| lower}}_change"
+* , methods={"POST","PUT"}
+* , requirements={"id"="\\d+"})
+* @param int $id
+* @param Request $request
+* @return Response
+*/
+public function change{{model.domainModel.name| capitalize}}(int $id, Request $request)
+{
+    $jsonCommand = json_decode($request->request->get('{{model.domainModel.name| lower}}'));
+    $response = $this->inputBus->change{{model.domainModel.name| capitalize}}($jsonCommand);
+    return new JsonResponse($response, 200, $this->apiAccess);
+}
+
+/**
+* @Route("/api/{{model.domainModel.name| lower}}/{id}/delete"
+* , name="api_{{model.domainModel.name| lower}}_delete"
+* , methods={"POST","PUT","DELETE","OPTIONS"}
+* , requirements={"id"="\\d+"})
+* @param int $id
+* @param Request $request
+* @return Response
+*/
+public function delete{{model.domainModel.name| capitalize}}(int $id, Request $request)
+{
+    $response = $this->inputBus->delete{{model.domainModel.name| capitalize}}($id);
+    return new JsonResponse($response, 200, $this->apiAccess);
+}
+
+// ------------------------------------------------------------- input bus
+
+// ———————————————————————————————————————————————————————————————————————
+// —— {{model.domainModel.name}}s
+// ———————————————————————————————————————————————————————————————————————
+
+public function add{{model.domainModel.name| lower}}($jsonCommand): bool
+{
+    $command = Add{{model.domainModel.name| capitalize}}::hydrateFromJson($jsonCommand);
+    $service = new AddOrChange{{model.domainModel.name| capitalize}}Service($this->{{model.domainModel.name| lower}}Repo);
+    $service->Add($command);
+    $this->entityManager->flush();
+    return true;
+}
+
+public function change{{model.domainModel.name| lower}}($jsonCommand): bool
+{
+    $command = Change{{model.domainModel.name| capitalize}}::hydrateFromJson($jsonCommand);
+    $service = new AddOrChange{{model.domainModel.name| capitalize}}Service($this->{{model.domainModel.name| lower}}Repo);
+    $service->Change($command);
+    $this->entityManager->flush();
+    return true;
+}
+
+public function delete{{model.domainModel.name| lower}}($id): bool
+{
+    $command = Delete{{model.domainModel.name| capitalize}}::make($id);
+    $service = new Delete{{model.domainModel.name| capitalize}}Service($this->{{model.domainModel.name| lower}}Repo);
+    $service->Delete($command);
+    $this->entityManager->flush();
+    return true;
+}

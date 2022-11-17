@@ -1,0 +1,48 @@
+<?php
+
+namespace {{ model.namespace }};
+
+use {{ model.domainModel.namespace }}\{{ model.domainModel.name | capitalize }}Repository;
+
+class {{ model.name }}Service
+{
+
+    /* @var {{ model.domainModel.name | capitalize }}Repository */
+    private $repo;
+
+    // —————————————————————————————————————————————————————————
+    // Constructor
+    // —————————————————————————————————————————————————————————
+    /**
+     * @param {{ model.domainModel.name | capitalize }}Repository $repo
+     */
+    public function __construct({{ model.domainModel.name | capitalize }}Repository $repo)
+    {
+        $this->repo = $repo;
+    }
+
+    // —————————————————————————————————————————————————————————
+    // Commands
+    // —————————————————————————————————————————————————————————
+
+    public function Add(Add{{ model.domainModel.name | capitalize }} $command): bool
+    {
+        $model = {{ model.domainModel.name | capitalize }}::make(
+            $this->repo->nextIdentity(),
+            // ...
+        );
+        $id = $this->repo->save($model);
+        return true;
+    }
+
+    public function Change(Change{{ model.domainModel.name | capitalize }} $command): bool
+    {
+        $model = $this->repo->getById($command->getId());
+        $model->change(
+            // ...
+        );
+        $id = $this->repo->save($model);
+        return true;
+    }
+
+}

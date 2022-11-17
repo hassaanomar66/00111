@@ -1,0 +1,83 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ model.project.infrastructureLayer }}\Database;
+
+use {{ model.namespace }}\{{ model.name }};
+use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\EntityNotFoundException;
+use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\Uid\Uuid;
+
+final class {{ model.name }}Repository
+    extends ServiceEntityRepository
+    implements \{{ model.namespace }}\{{ model.name }}Repository
+{
+
+    const NO_ENTITY_FOUND = 'no_{{ model.name | u.snake }}_found';
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Constructor
+    // —————————————————————————————————————————————————————————————————————————
+
+    public function __construct(ManagerRegistry $registry)
+    {
+        parent::__construct($registry, {{ model.name }}::class);
+    }
+
+    public function nextIdentity(): Uuid
+    {
+        return Uuid::v4();
+    }
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Single entity functions
+    // —————————————————————————————————————————————————————————————————————————
+
+    public function save({{ model.name }} $model): ?int
+    {
+        $em = $this->getEntityManager();
+        $em->persist($model);
+        $id = 0;
+        if ($model->getId()) $id = $model->getId();
+        return $id;
+    }
+
+    public function delete({{ model.name }} $model): bool
+    {
+        $em = $this->getEntityManager();
+        $em->remove($model);
+        return true;
+    }
+
+    public function getById(int $id): {{ model.name }}
+    {
+        $model = $this->find($id);
+        if (is_null($model)) throw new EntityNotFoundException(self::NO_ENTITY_FOUND);
+        return $model;
+    }
+
+    public function getByUuid(Uuid $uuid): {{ model.name }}
+    {
+        $model = $this->createQueryBuilder('t')
+                      ->andWhere('t.uuid = :uuid')
+                      ->setParameter('uuid', $uuid, 'uuid')
+                      ->getQuery()
+                      ->getOneOrNullResult();
+        if (is_null($model)) throw new EntityNotFoundException(self::NO_ENTITY_FOUND);
+        return $model;
+    }
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Multiple entity functions
+    // —————————————————————————————————————————————————————————————————————————
+
+    public function all(): array
+    {
+        $q = $this->createQueryBuilder('t')->andWhere('0 = 0');
+        $q->addOrderBy('t.id', 'DESC');
+        return $q->getQuery()->getResult();
+    }
+
+}

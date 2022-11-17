@@ -1,0 +1,14 @@
+@startuml
+
+skinparam shadowing false
+
+package "{{ model.namespace }}" {
+
+    class {{ model.name }} {
+{% for attribute in model.attributes %}
+        {{attribute.name}}: {{ attribute.type }}
+{% endfor %}
+    }
+}
+
+@enduml

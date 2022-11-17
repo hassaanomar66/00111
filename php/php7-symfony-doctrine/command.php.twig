@@ -1,0 +1,48 @@
+<?php
+
+namespace {{ model.namespace }};
+
+class {{ model.name }}
+{
+
+    {% for mapping in model.mapping %}
+/* @var {{mapping.type}} */
+    private ${{mapping.name}};
+    {% endfor %}
+
+    // ——————————————————————————————————————————————————————
+    // Constructor
+    // ——————————————————————————————————————————————————————
+
+    public function __construct(
+    {% for mapping in model.mapping %}
+        {% if not (loop.index == 1) %}, {% endif %}${{mapping.name}}
+{% endfor %}
+    )
+    {
+    {% for mapping in model.mapping %}
+        $this->{{mapping.name}} = ${{mapping.name}};
+{% endfor %}
+}
+
+public static function hydrateFromJson($json): self
+{
+return new self(
+{% for mapping in model.mapping %}
+    {% if not (loop.index == 1) %}, {% endif %}$json->{{mapping.name}}
+{% endfor %}
+);
+}
+
+// ——————————————————————————————————————————————————————————
+// Getters
+// ——————————————————————————————————————————————————————————
+{% for mapping in model.mapping %}
+
+    public function get{{mapping.name | capitalize}}()
+    {
+    return $this->{{mapping.name}};
+    }
+{% endfor %}
+
+}

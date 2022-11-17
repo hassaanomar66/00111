@@ -1,0 +1,502 @@
+<?php
+
+namespace {{ model.namespace }};
+
+use Doctrine\\ORM\\Mapping as ORM;
+use Assert\\Assertion;
+
+/**
+ * @ORM\\Entity(repositoryClass="{{ model.repository }}\\{{ model.name }}Repository")
+ */
+class {{ model.name }} {
+
+    // ------------------------------------------------------------------------------------------------------ properties
+    {% for field in model.fields %}
+{% if field.type == 'integer' and field.identifier == true %}
+/**
+     * @ORM\\Id()
+     * @ORM\\Column(type="integer")
+     * @ORM\\GeneratedValue(strategy="AUTO")
+     */
+{% endif %}
+{% if field.type == 'integer' and field.identifier == false %}
+/**
+     * @var integer{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="integer", nullable={% if field.required%}false{% else %}true{% endif %})
+     */
+{% endif %}
+{% if field.type == 'string' or field.type == 'email' %}
+/**
+     * @var string{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="string", length={{field.length}}, nullable={% if field.required%}false{% else %}true{% endif %})
+     */
+{% endif %}
+{% if field.type == 'uuid' %}
+/**
+     * @var string{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="guid", length={{field.length}}, nullable={% if field.required%}false{% else %}true{% endif %})
+     */
+{% endif %}
+{% if field.type == 'boolean' %}
+/**
+     * @var boolean{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="boolean", nullable={% if field.required%}false{% else %}true{% endif %}, options={"default":false})
+     */
+{% endif %}
+{% if field.type == 'text' %}
+/**
+     * @var string{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="text", nullable={% if field.required %}false{% else %}true{% endif %})
+     */
+{% endif %}
+{% if field.type == 'float' %}
+/**
+     * @var float{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="float", nullable={% if field.required%}false{% else %}true{% endif %})
+     */
+{% endif %}
+{% if field.type == 'date' %}
+/**
+     * @var DateTime{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="date", nullable={% if field.required%}false{% else %}true{% endif %})
+     */
+{% endif %}
+{% if field.type == 'date_immutable' %}
+/**
+     * @var DateTimeImmutable{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="date_immutable", nullable={% if field.required%}false{% else %}true{% endif %})
+     */
+{% endif %}
+{% if field.type == 'date_time' %}
+/**
+     * @var Datetime{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="date_time", nullable={% if field.required%}false{% else %}true{% endif %})
+     */
+{% endif %}
+{% if field.type == 'date_time_immutable' %}
+/**
+     * @var DateTimeImmutable{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="date_time_immutable", nullable={% if field.required%}false{% else %}true{% endif %})
+     */
+{% endif %}
+{% if field.type == 'array' %}
+/**
+     * @var array{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="array", nullable={% if field.required%}false{% else %}true{% endif %})
+     */
+{% endif %}
+{% if field.type == 'simple_array' %}
+/**
+     * @var array{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="simple_array", nullable={% if field.required%}false{% else %}true{% endif %})
+     */
+{% endif %}
+{% if field.type == 'json' %}
+/**
+     * @var array{% if not field.required %}|null{% endif %}
+
+     * @ORM\\Column(type="json", nullable={% if field.required%}false{% else %}true{% endif %})
+     */
+{% endif %}
+    private \${{field.name}};
+    {% endfor %}
+
+    // ----------------------------------------------------------------------------------------- links to other entities
+
+{% for relation in model.relations %}
+{% if relation.type == 'Many-To-One_Unidirectional' %}
+    /**
+     * Many-To-One_Unidirectional
+     * Many {{relation.domainModel.name}}s has one {{relation.targetDomainModel.name}}.
+     * @ORM\\ManyToOne(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}"
+{% if relation.inversedBy %}
+     *      , inversedBy="{{relation.inversedBy}}"
+{% endif %}
+     * )
+     * @ORM\\JoinColumn(nullable=true)
+     */
+    private \${{relation.mappedBy}};
+
+{% elseif relation.type == 'One-To-One_Unidirectional' %}
+    /**
+     * One-To-One_Unidirectional
+     * One {{relation.domainModel.name}} has one {{relation.targetDomainModel.name}}.
+     * @ORM\\ManyToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}")
+     * @ORM\\JoinColumn(nullable=true)
+     */
+    private \${{relation.mappedBy}};
+
+{% elseif relation.type == 'One-To-One_Bidirectional' %}
+    /**
+     * One-To-One_Bidirectional
+     * One {{relation.domainModel.name}} has one {{relation.targetDomainModel.name}}.
+     * @ORM\\ManyToMany(
+     *      targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}"
+     {% if relation.inversedBy %}
+*      , inversedBy="{{relation.inversedBy}}"
+     {% endif %}{% if relation.mappedBy  %}
+*      , mappedBy="{{relation.mappedBy}}"
+     {% endif %}
+* @ORM\\JoinColumn(nullable=true)
+     * )
+     */
+    private \${{relation.targetDomainModel.name|lower}};
+
+{% elseif relation.type == 'One-To-One_Self-referencing' %}
+    /**
+     * One-To-One_Self-referencing
+     * One {{relation.domainModel.name}} has one {{relation.targetDomainModel.name}}.
+     * @ORM\\OneToOne(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}")
+     * @ORM\\JoinColumn(nullable=true)
+     */
+    private \${{relation.mappedBy}};
+
+{% elseif relation.type == 'One-To-Many_Bidirectional' %}
+    /**
+     * One-To-Many_Bidirectional
+     * One {{relation.domainModel.name}} has many {{relation.targetDomainModel.name}}s.
+     * @ORM\\OneToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", mappedBy="{{relation.mappedBy}}", fetch="{{relation.fetch}}")
+     * @ORM\\OrderBy({"{{relation.orderBy}}" = "{{relation.orderDirection}}"})
+     * @ORM\\JoinColumn(nullable=true)
+     */
+     private \${{relation.targetDomainModel.name|lower}}s;
+
+{% elseif relation.type == 'One-To-Many_Self-referencing' %}
+    /**
+     * One-To-Many_Self-referencing
+     * One {{relation.domainModel.name}} has many {{relation.targetDomainModel.name}}s.
+     * @ORM\\OneToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", mappedBy="{{relation.mappedBy}}", fetch="{{relation.fetch}}")
+     * @ORM\\JoinColumn(nullable=true)
+     */
+     private \${{relation.inversedBy}};
+
+     /**
+     * One-To-Many_Self-referencing
+     * One {{relation.domainModel.name}} has many {{relation.targetDomainModel.name}}s.
+     * @ORM\\OneToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", inversedBy="{{relation.inversedBy}}", fetch="{{relation.fetch}}")
+     * @ORM\\JoinColumn(nullable=true)
+     */
+     private \${{relation.mappedBy}};
+
+{% elseif relation.type == 'Many-To-Many_Unidirectional' %}
+    /**
+     * Many-To-Many_Unidirectional
+     * Many {{relation.domainModel.name}}s have many {{relation.targetDomainModel.name}}s.
+     * @ORM\\ManyToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}")
+     * @ORM\\JoinColumn(nullable=true)
+     */
+     private \${{relation.targetDomainModel.name | lower}}s;
+
+{% elseif relation.type == 'Many-To-Many_Bidirectional' %}
+    /**
+     * Many-To-Many_Bidirectional
+     * Many {{relation.domainModel.name}}s have many {{relation.targetDomainModel.name}}s.
+     * @ORM\\ManyToMany(
+     *      targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}"
+     {% if relation.inverseBy %}
+*      , inversedBy="{{relation.inversedBy}}"
+     {% endif %}{% if relation.mappedBy  %}
+*      , mappedBy="{{relation.mappedBy}}"
+     {% endif %}
+* @ORM\\JoinColumn(nullable=true)
+    * )
+     */
+    private \${{relation.targetDomainModel.name | lower}}s;
+
+{% elseif relation.type == 'Many-To-Many_Self-referencing' %}
+    /**
+     * Many-To-Many_Self-referencing
+     * Many {{relation.domainModel.name}}s have many {{relation.targetDomainModel.name}}s.
+     * @ORM\\ManyToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", mappedBy="{{relation.mappedBy}}", fetch="{{relation.fetch}}")
+     * @ORM\\JoinColumn(nullable=true)
+     */
+    private \${{relation.inversedBy}};
+
+    /**
+     * Many {{relation.domainModel.name}}s have many {{relation.targetDomainModel.name}}s.
+     * @ORM\\ManyToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", inverseBy="{{relation.inversedBy}}", fetch="{{relation.fetch}}")
+     * @ORM\\JoinColumn(nullable=true)
+     */
+    private \${{relation.mappedBy}};
+
+{% endif %}
+{% endfor %}
+
+    // —————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+    // Constructor & assertion
+    // —————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+    private function __construct(
+{% for field in model.fields %}
+    {% if field.identifier == false %}
+{% if not (loop.index == 1 or loop.index == 2) %}, {% endif %}{% if field.type == 'integer' %}{% if field.identifier == false %}?int{% endif %}
+{% elseif field.type == 'float' %}float{% elseif field.type == 'string' %}string{% elseif field.type == 'text' %}string{% elseif field.type == 'uuid' %}string{% elseif field.type == 'email' %}string{% endif %} \${{field.name}}
+    {% endif %}
+{% endfor %}
+{% for relation in model.relations %}
+{% if relation.type == 'Many-To-One_Unidirectional' %}
+    , ?{{relation.targetDomainModel.name}} \${{relation.mappedBy}} = null
+{% elseif relation.type == 'One-To-One_Unidirectional' %}
+        , ?{{relation.targetDomainModel.name}} \${{relation.mappedBy}} = null
+{% elseif relation.type == 'One-To-One_Bidirectional' %}
+        , ?{{relation.targetDomainModel.name}} \${{relation.targetDomainModel.name | lower}} = null
+{% elseif relation.type == 'One-To-One_Self-referencing' %}
+        , ?{{relation.targetDomainModel.name}} \${{relation.mappedBy}} = null
+{% elseif relation.type == 'One-To-Many_Self-referencing' %}
+        , ?{{relation.targetDomainModel.name}} \${{relation.mappedBy}} = null
+{% endif %}
+{% endfor %}
+)
+    {
+        $this->assert(
+{% for field in model.fields %}
+    {% if field.identifier == false %}
+        {% if not (loop.index == 1 or loop.index == 2) %}, {% endif %}\${{field.name}}
+    {% endif %}
+{% endfor %}
+);
+// ------------------------------------------------------------------------------------------ set the properties
+{% for field in model.fields %}{% if field.identifier == false %}
+    $this->{{field.name}} = \${{field.name}};
+{% endif %}{% endfor %}
+
+// -------------------------------------------------------------------------------------- set the linked objects
+{% for relation in model.relations %}
+    {% if relation.type == 'Many-To-One_Unidirectional' %}
+        $this->{{relation.mappedBy}} = \${{relation.mappedBy}};
+    {% elseif relation.type == 'One-To-One_Unidirectional' %}
+        $this->{{relation.mappedBy}} = \${{relation.mappedBy}};
+    {% elseif relation.type == 'One-To-One_Bidirectional' %}
+        $this->{{relation.targetDomainModel.name | lower}} = \${{relation.targetDomainModel.name | lower}};
+    {% elseif relation.type == 'One-To-One_Self-referencing' %}
+        $this->{{relation.mappedBy}} = \${{relation.mappedBy}};
+    {% elseif relation.type == 'One-To-Many_Self-referencing' %}
+        $this->{{relation.mappedBy}} = \${{relation.mappedBy}};
+    {% endif %}
+{% endfor %}
+}
+
+private function assert(
+{% for field in model.fields %}
+    {% if field.identifier == false %}
+        {% if not (loop.index == 1 or loop.index == 2) %}, {% endif %}{% if field.type == 'integer' %}{% if field.identifier == false %}?int{% endif %}
+    {% elseif field.type == 'float' %}float{% elseif field.type == 'string' %}string{% elseif field.type == 'text' %}string{% elseif field.type == 'uuid' %}string{% elseif field.type == 'email' %}string{% endif %} \${{field.name}}
+    {% endif %}
+{% endfor %}
+)
+{
+{% for field in model.fields %}
+    {% if field.type == 'uuid' %}
+
+        Assertion::notEmpty(\${{field.name}});
+        Assertion::uuid(\${{field.name}});
+    {% else %}
+        {% if (field.type == 'string' or field.type == 'text') and field.required == true %}
+
+            Assertion::notEmpty(\${{field.name}});
+        {% endif %}
+        {% if field.type == 'boolean'%}
+
+            Assertion::boolean(\${{field.name}});
+        {% endif %}
+        {% if field.type == 'integer' and field.identifier == false %}
+
+            Assertion::integer(\${{field.name}});
+        {% endif %}
+        {% if field.type == 'email'%}
+
+            Assertion::email(\${{field.name}});
+        {% endif %}
+    {% endif %}
+{% endfor %}
+
+}
+
+// —————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+// Maker and changers
+// —————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+public static function make(
+{% for field in model.fields %}
+    {% if field.identifier == false %}
+        {% if not (loop.index == 1 or loop.index == 2) %}, {% endif %}{% if field.type == 'integer' %}{% if field.identifier == false %}?int{% endif %}
+    {% elseif field.type == 'float' %}float{% elseif field.type == 'string' %}string{% elseif field.type == 'text' %}string{% elseif field.type == 'uuid' %}string{% elseif field.type == 'email' %}string{% endif %} \${{field.name}}
+    {% endif %}
+{% endfor %}
+{% for relation in model.relations %}
+    {% if relation.type == 'Many-To-One_Unidirectional' %}
+        , ?{{relation.targetDomainModel.name}} \${{relation.mappedBy}} = null
+    {% elseif relation.type == 'One-To-One_Unidirectional' %}
+        , ?{{relation.targetDomainModel.name}} \${{relation.mappedBy}} = null
+    {% elseif relation.type == 'One-To-One_Bidirectional' %}
+        , ?{{relation.targetDomainModel.name}} \${{relation.targetDomainModel.name | lower}} = null
+    {% elseif relation.type == 'One-To-One_Self-referencing' %}
+        , ?{{relation.targetDomainModel.name}} \${{relation.mappedBy}} = null
+    {% elseif relation.type == 'One-To-Many_Self-referencing' %}
+        , ?{{relation.targetDomainModel.name}} \${{relation.mappedBy}} = null
+    {% endif %}
+{% endfor %}
+): self
+{
+return new self(
+{% for field in model.fields %}
+    {% if field.identifier == false %}
+        {% if not (loop.index == 1 or loop.index == 2) %}, {% endif %}\${{field.name}}
+    {% endif %}
+{% endfor %}
+{% for relation in model.relations %}
+    {% if relation.type == 'Many-To-One_Unidirectional' %}
+        , \${{relation.mappedBy}}
+    {% elseif relation.type == 'One-To-One_Unidirectional' %}
+        , \${{relation.mappedBy}}
+    {% elseif relation.type == 'One-To-One_Bidirectional' %}
+        , \${{relation.targetDomainModel.name | lower}}
+    {% elseif relation.type == 'One-To-One_Self-referencing' %}
+        , \${{relation.mappedBy}}
+    {% elseif relation.type == 'One-To-Many_Self-referencing' %}
+        , \${{relation.mappedBy}}
+    {% endif %}
+{% endfor %}
+);
+}
+
+public function change(
+{% for field in model.fields %}
+    {% if field.identifier == false %}
+        {% if not (loop.index == 1 or loop.index == 2) %}, {% endif %}{% if field.type == 'integer' %}{% if field.identifier == false %}?int{% endif %}
+    {% elseif field.type == 'float' %}float{% elseif field.type == 'string' %}string{% elseif field.type == 'text' %}string{% elseif field.type == 'uuid' %}string{% elseif field.type == 'email' %}string{% endif %} \${{field.name}}
+    {% endif %}
+{% endfor %}
+)
+{
+$this->assert(
+{% for field in model.fields %}
+    {% if field.identifier == false %}
+        {% if not (loop.index == 1 or loop.index == 2) %}, {% endif %}\${{field.name}}
+    {% endif %}
+{% endfor %}
+);
+// ---------------------------------------------------------------------------------------------- set the values
+{% for field in model.fields %}{% if field.identifier == false %}
+    $this->{{field.name}} = \${{field.name}};
+{% endif %}{% endfor %}
+}
+
+// —————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+// Properties getters
+// —————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+{% for field in model.fields %}
+    {% if field.type == 'boolean'%}
+
+        public function {{field.name}}(): bool
+        {
+        return $this->{{field.name}};
+        }
+    {% else %}
+
+        public function get{{field.name|capitalize}}(): {% if field.type == 'integer' %}{% if field.identifier == true %}?int{% else %}int{% endif %}
+    {% elseif field.type == 'float' %}float
+    {% elseif field.type == 'string' %}string
+    {% elseif field.type == 'text' %}string
+    {% elseif field.type == 'uuid' %}string
+    {% elseif field.type == 'email' %}string
+    {% elseif field.type == 'array' %}array
+    {% elseif field.type == 'simple_array' %}array
+    {% elseif field.type == 'json' %}array
+    {% elseif field.type == 'date' %}DateTime
+    {% elseif field.type == 'date_immutable' %}DateTimeImmutable
+    {% elseif field.type == 'date_time' %}DateTime
+    {% elseif field.type == 'date_time_immutable' %}DateTimeImmutable
+    {% endif %}
+        {
+        return $this->{{field.name}};
+        }
+    {% endif %}
+{% endfor %}
+
+// —————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+// Other models getters
+// —————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+{% for relation in model.relations %}
+    {% if relation.type == 'Many-To-One_Unidirectional' %}
+
+        public function get{{relation.mappedBy | capitalize}}(): ?{{relation.targetDomainModel.name}}
+        {
+        return $this->{{relation.mappedBy}};
+        }
+    {% elseif relation.type == 'One-To-One_Unidirectional' %}
+
+        public function get{{relation.mappedBy | capitalize}}(): ?{{relation.targetDomainModel.name}}
+        {
+        return $this->{{relation.mappedBy}};
+        }
+    {% elseif relation.type == 'One-To-One_Bidirectional' %}
+
+        public function get{{relation.targetDomainModel.name | capitalize}}(): ?{{relation.targetDomainModel.name}}
+        {
+        return $this->{{relation.targetDomainModel.name | lower}};
+        }
+    {% elseif relation.type == 'One-To-One_Self-referencing' %}
+
+        public function get{{relation.mappedBy | capitalize}}(): ?self
+        {
+        return $this->{{relation.mappedBy}};
+        }
+    {% elseif relation.type == 'One-To-Many_Bidirectional' %}
+
+        public function get{{relation.targetDomainModel.name | capitalize}}s(): array
+        {
+        return $this->{{relation.targetDomainModel.name | lower}}s->getValues();
+        }
+    {% elseif relation.type == 'One-To-Many_Self-referencing' %}
+
+        public function get{{relation.inversedBy | capitalize}}(): array
+        {
+        return $this->{{relation.inversedBy}}->getValues();
+        }
+
+        public function get{{relation.mappedBy | capitalize}}(): ?self
+        {
+        return $this->{{relation.mappedBy}};
+        }
+    {% elseif relation.type == 'Many-To-Many_Unidirectional' %}
+
+        public function get{{relation.targetDomainModel.name | capitalize}}s(): array
+        {
+        return $this->{{relation.targetDomainModel.name | lower}}s->getValues();
+        }
+    {% elseif relation.type == 'Many-To-Many_Bidirectional' %}
+
+        public function get{{relation.targetDomainModel.name | capitalize}}s(): array
+        {
+        return $this->{{relation.targetDomainModel.name | lower}}s->getValues();
+        }
+    {% elseif relation.type == 'Many-To-Many_Self-referencing' %}
+
+        public function get{{relation.mappedBy | capitalize}}(): array
+        {
+        return $this->{{relation.mappedBy}}->getValues();
+        }
+
+        public function get{{relation.inversedBy | capitalize}}(): array
+        {
+        return $this->{{relation.inversedBy}}->getValues();
+        }
+    {% endif %}
+{% endfor %}
+
+}

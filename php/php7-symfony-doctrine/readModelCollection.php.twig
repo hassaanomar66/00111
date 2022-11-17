@@ -1,0 +1,47 @@
+<?php
+
+namespace {{ model.namespace }};
+
+class {{ model.name }}Collection implements \\JsonSerializable
+{
+    /** @var {{model.name}}[] */
+    private $collection;
+
+    // ———————————————————————————————————————————————————————————
+    // Constructor
+    // ———————————————————————————————————————————————————————————
+
+    public function __construct()
+    {
+        $this->collection = [];
+}
+
+// ———————————————————————————————————————————————————————————
+// What to render as json
+// ———————————————————————————————————————————————————————————
+
+public function jsonSerialize()
+{
+$json = new \\stdClass();
+$json->collection = $this->getCollection();
+return $json;
+}
+
+public function addReadModel({{model.name}} $readModel)
+{
+$this->collection[] = $readModel;
+}
+
+// ———————————————————————————————————————————————————————————
+// Getters
+// ———————————————————————————————————————————————————————————
+
+/**
+* @return {{model.name}}[]
+*/
+public function getCollection(): array
+{
+return $this->collection;
+}
+
+}

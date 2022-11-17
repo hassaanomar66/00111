@@ -1,0 +1,103 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ model.namespace }};
+
+use {{ model.domainModel.namespace }}\{{ model.domainModel.name }};
+
+class {{ model.name }} implements \JsonSerializable
+{
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Constructor
+    // —————————————————————————————————————————————————————————————————————————
+
+    public function __construct(
+{% for mapping in model.mapping %}
+        protected {% if mapping.type == 'integer' %}int{% elseif mapping.type == 'string' %}string{% elseif mapping.type == 'email' %}string{% elseif mapping.type == 'float' %}float{% elseif mapping.type == 'text' %}string{% elseif mapping.type == 'boolean' %}bool{% elseif mapping.type == 'date' %}\DateTime{% elseif mapping.type == 'date_immutable' %}\DateTimeImmutable{% elseif mapping.type == 'date_time' %}\DateTime{% elseif mapping.type == 'date_time_immutable' %}\DateTimeImmutable{% elseif mapping.type == 'array' %}array{% elseif mapping.type == 'simple_array' %}array{% elseif mapping.type == 'json' %}\stdClass{% elseif mapping.type == 'uuid' %}string{% elseif mapping.type == 'enum' %}string{% else %}{{mapping.type}}{% endif %} ${{mapping.name}},
+{% endfor %}
+    ) {
+    }
+
+    // —————————————————————————————————————————————————————————————————————————
+    // What to render as json
+    // —————————————————————————————————————————————————————————————————————————
+
+    public function jsonSerialize(): \stdClass
+    {
+        $json = new \stdClass();
+{% for mapping in model.mapping %}
+        {% if mapping.type == 'boolean' %}
+$json->{{mapping.name}} = $this->{{mapping.name | u.camel}}();
+{% else %}
+$json->{{mapping.name}} = $this->get{{mapping.name | u.camel.title}}();
+{% endif %}
+{% endfor %}
+
+        return $json;
+    }
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Hydrate from model
+    // —————————————————————————————————————————————————————————————————————————
+
+    public static function hydrateFromModel({{model.domainModel.name}} $model): self
+    {
+        return new self(
+        {% for mapping in model.mapping %}
+    {% if mapping.type == 'integer' %}$model->get{{mapping.name | u.camel.title}}(),
+    {% elseif mapping.type == 'string' %}$model->get{{mapping.name | u.camel.title}}(),
+    {% elseif mapping.type == 'email' %}$model->get{{mapping.name | u.camel.title}}(),
+    {% elseif mapping.type == 'float' %}$model->get{{mapping.name | u.camel.title}}(),
+    {% elseif mapping.type == 'text' %}$model->get{{mapping.name | u.camel.title}}(),
+    {% elseif mapping.type == 'boolean' %}$model->{{mapping.name | u.camel}}(),
+    {% elseif mapping.type == 'date' %}$model->get{{mapping.name | u.camel.title}}(),
+    {% elseif mapping.type == 'date_immutable' %}$model->get{{mapping.name | u.camel.title}}(),
+    {% elseif mapping.type == 'date_time' %}$model->get{{mapping.name | u.camel.title}}(),
+    {% elseif mapping.type == 'date_time_immutable' %}$model->get{{mapping.name | u.camel.title}}(),
+    {% elseif mapping.type == 'array' %}$model->get{{mapping.name | u.camel.title}}(),
+    {% elseif mapping.type == 'simple_array' %}$model->get{{mapping.name | u.camel.title}}(),
+    {% elseif mapping.type == 'json' %}$model->get{{mapping.name | u.camel.title}}(),
+    {% elseif mapping.type == 'uuid' %}$model->get{{mapping.name | u.camel.title}}()->toRfc4122(),
+    {% elseif mapping.type == 'enum' %}$model->get{{mapping.name | u.camel.title}}()->value,
+    {% else %}{{mapping.type}}::hydrateFromModel($model->get{{mapping.name | u.camel.title}}()),
+    {% endif %}
+    {% endfor %}
+);
+    }
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Getters
+    // —————————————————————————————————————————————————————————————————————————
+    {% for mapping in model.mapping %}
+
+    {% if mapping.type == 'boolean' %}
+public function {{mapping.name | u.camel}}(): bool
+    {
+        return $this->{{mapping.name}};
+    }
+    {% else %}
+public function get{{mapping.name | u.camel.title}}(): {% if mapping.type == 'integer' %}int
+{% elseif mapping.type == 'string' %}string
+{% elseif mapping.type == 'email' %}string
+{% elseif mapping.type == 'float' %}float
+{% elseif mapping.type == 'text' %}string
+{% elseif mapping.type == 'date' %}\DateTime
+{% elseif mapping.type == 'date_immutable' %}\DateTimeImmutable
+{% elseif mapping.type == 'date_time' %}\DateTime
+{% elseif mapping.type == 'date_time_immutable' %}\DateTimeImmutable
+{% elseif mapping.type == 'array' %}array
+{% elseif mapping.type == 'simple_array' %}array
+{% elseif mapping.type == 'json' %}\stdClass
+{% elseif mapping.type == 'uuid' %}string
+{% elseif mapping.type == 'enum' %}string
+{% else %}{{mapping.type}}
+{% endif %}
+    {
+        return $this->{{mapping.name}};
+    }
+    {% endif %}
+    {% endfor %}
+
+}

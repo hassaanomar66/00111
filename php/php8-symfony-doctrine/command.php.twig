@@ -1,0 +1,68 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ model.namespace }};
+
+class {{ model.name }}
+{
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Constructor
+    // —————————————————————————————————————————————————————————————————————————
+
+    private function __construct(
+    {% for mapping in model.mapping %}
+        protected {% if mapping.type == 'integer' %}int{% elseif mapping.type == 'string' %}string{% elseif mapping.type == 'email' %}string{% elseif mapping.type == 'float' %}float{% elseif mapping.type == 'text' %}string{% elseif mapping.type == 'boolean' %}bool{% elseif mapping.type == 'date' %}\DateTime{% elseif mapping.type == 'date_immutable' %}\DateTimeImmutable{% elseif mapping.type == 'date_time' %}\DateTime{% elseif mapping.type == 'date_time_immutable' %}\DateTimeImmutable{% elseif mapping.type == 'array' %}array{% elseif mapping.type == 'simple_array' %}array{% elseif mapping.type == 'json' %}\stdClass{% elseif mapping.type == 'uuid' %}string{% elseif mapping.type == 'enum' %}string{% else %}{{mapping.type}}{% endif %} ${{mapping.name}},
+    {% endfor %}
+)
+    {
+    }
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Hydrate from a json command
+    // —————————————————————————————————————————————————————————————————————————
+
+    public static function hydrateFromJson($json): self
+    {
+        return new self(
+    {% for mapping in model.mapping %}
+        $json->{{mapping.name}},
+    {% endfor %}
+    );
+    }
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Getters
+    // —————————————————————————————————————————————————————————————————————————
+    {% for mapping in model.mapping %}
+
+    {% if mapping.type == 'boolean' %}
+public function {{mapping.name | u.camel}}(): bool
+    {
+        return $this->{{mapping.name}};
+    }
+    {% else %}
+public function get{{mapping.name | u.camel.title}}(): {% if mapping.type == 'integer' %}int
+{% elseif mapping.type == 'string' %}string
+{% elseif mapping.type == 'email' %}string
+{% elseif mapping.type == 'float' %}float
+{% elseif mapping.type == 'text' %}string
+{% elseif mapping.type == 'date' %}\DateTime
+{% elseif mapping.type == 'date_immutable' %}\DateTimeImmutable
+{% elseif mapping.type == 'date_time' %}\DateTime
+{% elseif mapping.type == 'date_time_immutable' %}\DateTimeImmutable
+{% elseif mapping.type == 'array' %}array
+{% elseif mapping.type == 'simple_array' %}array
+{% elseif mapping.type == 'json' %}\stdClass
+{% elseif mapping.type == 'uuid' %}string
+{% elseif mapping.type == 'enum' %}string
+{% else %}{{mapping.type}}
+{% endif %}
+    {
+        return $this->{{mapping.name}};
+    }
+    {% endif %}
+    {% endfor %}
+
+}

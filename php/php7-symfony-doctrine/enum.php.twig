@@ -1,0 +1,27 @@
+<?php
+
+namespace {{ enum.namespace }};
+
+final class {{ enum.name }} {
+
+    {% for option in enum.options %}
+public const {{ option.code | upper }} = '{{ option.value }}';
+    {% endfor %}
+
+    public static function get{{ enum.name | capitalize }}s(): array
+    {
+        $_result = [];
+        {% for option in enum.options %}
+$_result[] = self::{{ option.code | upper }};
+        {% endfor %}
+return $_result;
+    }
+
+    public static function assert($value)
+    {
+        if (!in_array(trim($value), self::get{{ enum.name | capitalize }}s())) {
+            throw new \AssertionError('Please provide a valid {{ enum.name }}.');
+        }
+    }
+
+}

@@ -1,0 +1,79 @@
+// ------------------------------------------------------------------ controller
+
+// —————————————————————————————————————————————————————————————————————————————
+// —— {{model.domainModel.name}}s (input)
+// —————————————————————————————————————————————————————————————————————————————
+
+#[Route('/api/{{model.domainModel.name | u.snake.lower }}/{{model.name | u.snake.lower }}', methods: ['POST','PUT'])]
+public function add{{model.domainModel.name| u.camel.title}}(Request $request)
+{
+    $jsonCommand = json_decode($request->request->get('{{model.domainModel.name | lower}}'));
+    $response = $this->commandBus->{{model.name| u.camel}}($jsonCommand);
+    return new JsonResponse($response, 200, $this->apiAccess);
+}
+
+
+#[Route('/api/{{model.domainModel.name | u.snake.lower }}/add', methods: ['POST','PUT'])]
+public function add{{model.domainModel.name| u.camel.title}}(Request $request)
+{
+    $jsonCommand = json_decode($request->request->get('{{model.domainModel.name | lower}}'));
+    $response = $this->commandBus->add{{model.domainModel.name| u.camel.title}}($jsonCommand);
+    return new JsonResponse($response, 200, $this->apiAccess);
+}
+
+#[Route('/api/{{model.domainModel.name | u.snake.lower }}/{id}', requirements: ['id' => '\d+'], methods: ['POST','PUT'])]
+public function change{{model.domainModel.name| u.camel.title}}(int $id, Request $request)
+{
+    $jsonCommand = json_decode($request->request->get('{{model.domainModel.name| u.snake}}'));
+    $response = $this->commandBus->change{{model.domainModel.name| u.camel.title}}($jsonCommand);
+    return new JsonResponse($response, 200, $this->apiAccess);
+}
+
+#[Route('/api/{{model.domainModel.name | u.snake.lower }}/{id}/delete', requirements: ['id' => '\d+'], methods: ['POST','PUT','DELETE','OPTIONS'])]
+public function delete{{model.domainModel.name| u.camel.title}}(int $id, Request $request)
+{
+    $response = $this->commandBus->delete{{model.domainModel.name| u.camel.title}}($id);
+    return new JsonResponse($response, 200, $this->apiAccess);
+}
+
+// ----------------------------------------------------------------- command bus
+
+// —————————————————————————————————————————————————————————————————————————————
+// —— {{model.domainModel.name}}s
+// —————————————————————————————————————————————————————————————————————————————
+
+public function {{model.name| u.camel}}(\stdClass $jsonCommand): bool
+{
+    $command = {{model.name| u.camel.title}}::hydrateFromJson($jsonCommand);
+    $handler = new {{model.name| u.camel.title}}Handler($this->{{model.domainModel.name| lower}}Repo);
+    $handler->Go($command);
+    $this->entityManager->flush();
+    return true;
+}
+
+public function add{{model.domainModel.name| u.camel.title}}(\stdClass $jsonCommand): bool
+{
+    $command = Add{{model.domainModel.name| u.camel.title}}::hydrateFromJson($jsonCommand);
+    $handler = new Add{{model.domainModel.name| u.camel.title}}Handler($this->{{model.domainModel.name| lower}}Repo);
+    $handler->Add($command);
+    $this->entityManager->flush();
+    return true;
+}
+
+public function change{{model.domainModel.name| u.camel.title}}(\stdClass $jsonCommand): bool
+{
+    $command = Change{{model.domainModel.name| u.camel.title}}::hydrateFromJson($jsonCommand);
+    $handler = new Change{{model.domainModel.name| u.camel.title}}Handler($this->{{model.domainModel.name| lower}}Repo);
+    $handler->Change($command);
+    $this->entityManager->flush();
+    return true;
+}
+
+public function delete{{model.domainModel.name| u.camel.title}}($id): bool
+{
+    $command = Delete{{model.domainModel.name| u.camel.title}}::make($id);
+    $handler = new Delete{{model.domainModel.name| u.camel.title}}Handler($this->{{model.domainModel.name| lower}}Repo);
+    $handler->Delete($command);
+    $this->entityManager->flush();
+    return true;
+}

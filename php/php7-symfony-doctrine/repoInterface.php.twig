@@ -1,0 +1,18 @@
+<?php
+
+namespace {{ model.namespace }};
+
+interface {{ model.name }}Repository
+{
+
+    public function nextIdentity(): string;
+
+    public function save({{ model.name }} $model): ?int;
+
+    public function delete({{ model.name }} $model): bool;
+
+    public function getById(int $id): {{ model.name }};
+
+    public function getByUuid(string $uuid): {{ model.name }};
+
+}

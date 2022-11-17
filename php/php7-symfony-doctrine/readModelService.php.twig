@@ -1,0 +1,43 @@
+<?php
+
+namespace {{ model.namespace }};
+
+use {{ model.domainModel.namespace }}\{{ model.domainModel.name | capitalize }}Repository;
+
+class Get{{ model.domainModel.name | capitalize }}
+{
+
+    /* @var {{ model.domainModel.name | capitalize }}Repository */
+    private $repo;
+
+    // ———————————————————————————————————————————————————————
+    // Constructor
+    // ———————————————————————————————————————————————————————
+    /**
+     * @param {{ model.domainModel.name | capitalize }}Repository $repo
+     */
+    public function __construct({{ model.domainModel.name | capitalize }}Repository $repo)
+    {
+        $this->repo = $repo;
+    }
+
+    // ———————————————————————————————————————————————————————
+    // Read functions
+    // ———————————————————————————————————————————————————————
+
+    public function ById($id): {{model.name | capitalize}}
+    {
+        return {{model.name | capitalize}}::hydrateFromModel($this->repo->getById($id));
+    }
+
+    public function All(): {{model.name | capitalize}}Collection
+    {
+        $result = new {{model.name | capitalize}}Collection();
+        $models = $this->repo->all();
+        foreach ($models as $model) {
+            $result->addReadModel({{model.name | capitalize}}::hydrateFromModel($model));
+        }
+        return $result;
+    }
+
+}

@@ -1,0 +1,79 @@
+<?php
+
+namespace {{ model.namespace }};
+
+class {{ model.name }} implements \\JsonSerializable
+{
+    {% for mapping in model.mapping %}
+/* @var {{mapping.type}} */
+    private \${{mapping.name}};
+    {% endfor %}
+
+    // ————————————————————————————————————————————————————————————
+    // Constructor
+    // ————————————————————————————————————————————————————————————
+
+    public function __construct(
+{% for mapping in model.mapping %}
+        {% if not (loop.index == 1) %}, {% endif %}\${{mapping.name}}
+{% endfor %}
+    ) {
+    {% for mapping in model.mapping %}
+    $this->{{mapping.name}} = \${{mapping.name}};
+{% endfor %}
+}
+
+// ——————————————————————————————————————————————————————————————
+// What to render as json
+// ——————————————————————————————————————————————————————————————
+
+public function jsonSerialize()
+{
+$json = new \\stdClass();
+{% for mapping in model.mapping %}
+    $json->{{mapping.name}} = $this->get{{mapping.name | capitalize}}();
+{% endfor %}return $json;
+}
+
+// ——————————————————————————————————————————————————————————————
+// Hydrate from model
+// ——————————————————————————————————————————————————————————————
+
+public static function hydrateFromModel({{model.domainModel.name}} $model): self
+{
+return new self(
+{% for mapping in model.mapping %}
+    {% if not (loop.index == 1) %}, {% endif %}
+    {% if mapping.type == 'integer' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'string' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'uuid' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'email' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'float' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'text' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'boolean' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'date' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'date_immutable' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'date_time' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'date_time_immutable' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'array' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'simple_array' %}$model->get{{mapping.name | capitalize}}()
+    {% elseif mapping.type == 'json' %}$model->get{{mapping.name | capitalize}}()
+    {% else %}
+        {{mapping.type}}::hydrateFromModel($model->get{{mapping.name | capitalize}}())
+    {% endif %}
+{% endfor %}
+);
+}
+
+// ——————————————————————————————————————————————————————————————
+// Getters
+// ——————————————————————————————————————————————————————————————
+{% for mapping in model.mapping %}
+
+    public function get{{mapping.name | capitalize}}()
+    {
+    return $this->{{mapping.name}};
+    }
+{% endfor %}
+
+}

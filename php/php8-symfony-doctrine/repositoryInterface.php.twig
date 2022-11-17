@@ -1,0 +1,24 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ model.namespace }};
+
+use Symfony\Component\Uid\Uuid;
+
+interface {{ model.name | u.camel.title }}Repository
+{
+
+    public function nextIdentity(): Uuid;
+
+    public function save({{ model.name | u.camel.title }} $model): ?int;
+
+    public function delete({{ model.name | u.camel.title }} $model): bool;
+
+    public function getById(int $id): {{ model.name | u.camel.title }};
+
+    public function getByUuid(Uuid $uuid): {{ model.name | u.camel.title }};
+
+    public function getAll(): array;
+
+}

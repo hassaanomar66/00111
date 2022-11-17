@@ -1,0 +1,66 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ model.namespace }};
+
+use {{ model.domainModel.namespace }}\{{ model.domainModel.name | u.camel.title }}Repository;
+
+class {{ model.name }}Handler
+{
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Constructor
+    // —————————————————————————————————————————————————————————————————————————
+
+    public function __construct(
+        protected {{ model.domainModel.name | u.camel.title }}Repository ${{model.domainModel.name | lower}}Repo
+    ) {
+    }
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Commands
+    // —————————————————————————————————————————————————————————————————————————
+
+    public function Go({{ model.name | u.camel.title }} $command): bool
+    {
+        $model = $this->{{model.domainModel.name | lower}}Repo->getById($command->getId());
+
+        // ...
+
+        {% for mapping in model.mapping %}
+{% if mapping.type == 'boolean' %}
+$command->{{mapping.name | u.camel }}()
+    {% else %}
+$command->get{{mapping.name | u.camel.title }}()
+    {% endif %}
+    {% endfor %}
+
+        // ...
+
+        $this->{{model.domainModel.name | lower}}Repo->save($model);
+        return true;
+    }
+
+
+    public function Add(Add{{ model.domainModel.name | u.camel.title }} $command): bool
+    {
+        $model = {{ model.domainModel.name | capitalize }}::make(
+            $this->{{model.domainModel.name | lower}}Repo->nextIdentity(),
+            // ...
+        );
+        $id = $this->{{model.domainModel.name | lower}}Repo->save($model);
+        return true;
+    }
+
+    public function Change(Change{{ model.domainModel.name | u.camel.title }} $command): bool
+    {
+        $model = $this->{{model.domainModel.name | lower}}Repo->getById($command->getId());
+        $model->change(
+            // ...
+        );
+        $id = $this->{{model.domainModel.name | lower}}Repo->save($model);
+        return true;
+    }
+
+}

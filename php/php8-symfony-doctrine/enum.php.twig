@@ -1,0 +1,13 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ enum.namespace }};
+
+enum {{ enum.name }}: string {
+
+    {% for option in enum.options %}
+case {{ option.code | upper }} = '{{ option.value }}';
+    {% endfor %}
+
+}

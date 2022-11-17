@@ -1,0 +1,51 @@
+
+// ——————————————————————————————————————————————————————————————
+// —— {{model.domainModel.name}}s (output)
+// ——————————————————————————————————————————————————————————————
+
+/**
+ * @Route("/api/{{model.domainModel.name | lower}}"
+ * , name="api_{{model.domainModel.name | lower}}_all"
+ * , methods={"GET"})
+ * @param Request $request
+ * @return Response
+ */
+public function get{{model.domainModel.name | capitalize}}s(Request $request)
+{
+    $response = $this->outputBus->getAll{{model.domainModel.name | capitalize}}s();
+    return new JsonResponse($response, 200, $this->apiAccess);
+}
+
+/**
+* @Route("/api/{{model.domainModel.name | lower}}/{id}"
+* , name="api_{{model.domainModel.name | lower}}_detail"
+* , methods={"GET"}
+* , requirements={"id"="\\d+"})
+* @param int $id
+* @param Request $request
+* @return Response
+*/
+public function get{{model.domainModel.name | capitalize}}(int $id, Request $request)
+{
+    $response = new \\stdClass();
+    $response->data = $this->outputBus->get{{model.domainModel.name | capitalize}}ById($id);
+    return new JsonResponse($response, 200, $this->apiAccess);
+}
+
+// --------------------------------------------------- output bus
+
+// ——————————————————————————————————————————————————————————————
+// —— {{model.domainModel.name}}s
+// ——————————————————————————————————————————————————————————————
+
+public function getAll{{model.domainModel.name | capitalize}}s(): {{model.name}}Collection
+{
+    $service = new Get{{model.domainModel.name | capitalize}}($this->{{model.domainModel.name | lower}}Repo);
+    return $service->All();
+}
+
+public function get{{model.domainModel.name | capitalize}}ById(int $id): {{model.name}}
+{
+    $service = new Get{{model.domainModel.name | capitalize}}($this->{{model.domainModel.name | lower}}Repo);
+    return $service->ById($id);
+}

@@ -1,0 +1,51 @@
+use {{ model.namespace }}\{{ model.name }};
+use PHPUnit\Framework\Assert;
+use PHPUnit\Framework\TestCase;
+use Symfony\Component\Uid\Uuid;
+
+final class {{ model.name }}Test extends TestCase
+{
+
+    private {{ model.name }} $model;
+    private Uuid $uuid;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->uuid = Uuid::v4();
+        $this->model = {{ model.name }}::make(
+            $this->uuid,
+{% for attribute in model.attributes %}
+{% if attribute.make %}
+            '',
+{% endif %}{% endfor %}
+        );
+        $this->model->setChecksum();
+    }
+
+    public function testMake(): void
+    {
+        Assert::assertInstanceOf({{ model.name }}::class, $this->model);
+        Assert::assertEquals($this->uuid, $this->model->getUuid());
+{% for attribute in model.attributes %}
+{% if attribute.make %}
+        Assert::assertEquals('', $this->model->{% if attribute.type == 'boolean' %}is{% else %}get{% endif %}{{attribute.name|u.camel.title}}());
+{% endif %}{% endfor %}
+    }
+
+    public function testChange(): void
+    {
+        $this->model->change(
+{% for attribute in model.attributes %}
+{% if attribute.change %}
+           '',
+{% endif %}{% endfor %}
+        );
+        $this->model->setChecksum();
+{% for attribute in model.attributes %}
+{% if attribute.change %}
+        Assert::assertEquals('', $this->model->{% if attribute.type == 'boolean' %}is{% else %}get{% endif %}{{attribute.name|u.camel.title}}());
+{% endif %}{% endfor %}
+
+    }
+}

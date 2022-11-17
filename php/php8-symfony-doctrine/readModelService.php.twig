@@ -1,0 +1,46 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ model.namespace }};
+
+use {{ model.domainModel.namespace }}\{{ model.domainModel.name | u.camel.title }}Repository;
+use Symfony\Component\Uid\Uuid;
+
+class Get{{ model.domainModel.name | u.camel.title}}
+{
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Constructor
+    // —————————————————————————————————————————————————————————————————————————
+
+    public function __construct(
+        protected {{ model.domainModel.name | u.camel.title }}Repository ${{model.domainModel.name | lower}}Repo
+    ) {
+    }
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Read functions
+    // —————————————————————————————————————————————————————————————————————————
+
+    public function ById(int $id): {{model.name }}
+    {
+        return {{model.name | u.camel.title}}::hydrateFromModel($this->{{model.domainModel.name | lower}}Repo->getById($id));
+    }
+
+    public function ByUuid(string $uuid): {{model.name }}
+    {
+        return {{model.name | u.camel.title}}::hydrateFromModel($this->{{model.domainModel.name | lower}}Repo->getByUuid(Uuid::fromString($uuid)));
+    }
+
+    public function All(): {{model.name | u.camel.title}}Collection
+    {
+        $result = new {{model.name | u.camel.title}}Collection();
+        $models = $this->{{model.domainModel.name | lower}}Repo->all();
+        foreach ($models as $model) {
+            $result->addItem({{model.name | u.camel.title}}::hydrateFromModel($model));
+        }
+        return $result;
+    }
+
+}

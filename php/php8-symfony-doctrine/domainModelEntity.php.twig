@@ -1,0 +1,477 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ model.namespace }};
+
+use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Uid\Uuid;
+
+#[ORM\Entity(repositoryClass:\{{ model.repository }}::class)]
+class {{ model.name }} {
+
+    // -------------------------------------------------------------- attributes
+    {% for attribute in model.attributes %}
+{% if attribute.type == 'integer' and attribute.identifier == true %}
+#[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column]
+{% elseif attribute.type == 'integer' and attribute.identifier == false %}
+    #[ORM\Column]
+{% elseif attribute.type == 'string' or attribute.type == 'email' %}
+    #[ORM\Column(length: {{attribute.length}})]
+{% elseif attribute.type == 'enum' %}
+    #[ORM\Column(length:36)]
+{% elseif attribute.type == 'uuid' %}
+    #[ORM\Column(type: 'uuid')]
+{% elseif attribute.type == 'boolean' %}
+    #[ORM\Column(options: ["default" => 0])]
+{% elseif attribute.type == 'text' %}
+    #[ORM\Column(type: 'text')]
+{% elseif attribute.type == 'float' %}
+    #[ORM\Column]
+{% elseif attribute.type == 'date' %}
+    #[ORM\Column]
+{% elseif attribute.type == 'date_immutable' %}
+    #[ORM\Column]
+{% elseif attribute.type == 'date_time' %}
+    #[ORM\Column]
+{% elseif attribute.type == 'date_time_immutable' %}
+    #[ORM\Column]
+{% elseif attribute.type == 'array' %}
+    #[ORM\Column]
+{% elseif attribute.type == 'simple_array' %}
+    #[ORM\Column]
+{% elseif attribute.type == 'json' %}
+    #[ORM\Column]
+{% endif %}
+    private {% if attribute.required == false %}?{% endif %}{% if attribute.type == 'integer' %}int{% endif %}
+{% if attribute.type == 'string' %}string{% endif %}
+{% if attribute.type == 'email' %}string{% endif %}
+{% if attribute.type == 'float' %}float{% endif %}
+{% if attribute.type == 'text' %}string{% endif %}
+{% if attribute.type == 'boolean' %}bool{% endif %}
+{% if attribute.type == 'date' %}\DateTime{% endif %}
+{% if attribute.type == 'date_immutable' %}\DateTimeImmutable{% endif %}
+{% if attribute.type == 'date_time' %}\DateTime{% endif %}
+{% if attribute.type == 'date_time_immutable' %}\DateTimeImmutable{% endif %}
+{% if attribute.type == 'array' %}array{% endif %}
+{% if attribute.type == 'simple_array' %}array{% endif %}
+{% if attribute.type == 'json' %}\stdClass{% endif %}
+{% if attribute.type == 'uuid' %}Uuid{% endif %}
+{% if attribute.type == 'enum' %}string{% endif %} ${{attribute.name}}{% if attribute.required == false %} = null{% endif %};
+
+{% endfor %}
+
+    // ---------------------------------------------------------------- associations
+{% for association in model.associations %}
+    {% if association.type == 'Many-To-One_Unidirectional' %}
+
+    /**
+    * Many-To-One_Unidirectional
+    * Many {{model.name}}s has one {{association.targetDomainModel.name}}.
+    */
+    #[ORM\ManyToOne(targetEntity: "{{association.targetDomainModel.namespace}}\{{association.targetDomainModel.name}}", fetch:"{{association.fetch}}" {% if association.inversedBy %}, inversedBy:"{{association.inversedBy}}"{% endif %})]
+    #[ORM\JoinColumn(nullable: {% if association.required %}false{% else %}true{% endif %})]
+    private {% if association.required == false %}?{% endif %}{{association.targetDomainModel.name}} ${{association.mappedBy}};
+    {% elseif association.type == 'One-To-One_Unidirectional' %}
+
+    /**
+    * One-To-One_Unidirectional
+    * One {{model.name}} has one {{association.targetDomainModel.name}}.
+    */
+    #[ORM\ManyToMany(targetEntity: "{{association.targetDomainModel.namespace}}\{{association.targetDomainModel.name}}", fetch:"{{association.fetch}}" )]
+    #[ORM\JoinColumn(nullable: {% if association.required %}false{% else %}true{% endif %})]
+    private {% if association.required == false %}?{% endif %}{{association.targetDomainModel.name}} ${{association.mappedBy}};
+    {% elseif association.type == 'One-To-One_Bidirectional' %}
+
+    /**
+    * One-To-One_Bidirectional
+    * One {{model.name}} has one {{association.targetDomainModel.name}}.
+    */
+    #[ORM\ManyToMany(targetEntity: "{{association.targetDomainModel.namespace}}\{{association.targetDomainModel.name}}", fetch:"{{association.fetch}}" {% if association.inversedBy %}, inversedBy:"{{association.inversedBy}}"{% endif %}{% if association.mappedBy  %}, mappedBy:"{{association.mappedBy}}"{% endif %} )]
+    #[ORM\JoinColumn(nullable: {% if association.required %}false{% else %}true{% endif %})]
+    private {% if association.required == false %}?{% endif %}{{association.targetDomainModel.name}} ${{association.targetDomainModel.name|lower}};
+    {% elseif association.type == 'One-To-One_Self-referencing' %}
+
+    /**
+    * One-To-One_Self-referencing
+    * One {{model.name}} has one {{association.targetDomainModel.name}}.
+    */
+    #[ORM\OneToOne(targetEntity: "{{association.targetDomainModel.namespace}}\{{association.targetDomainModel.name}}", fetch:"{{association.fetch}}")]
+    #[ORM\JoinColumn(nullable: {% if association.required %}false{% else %}true{% endif %})]
+    private {% if association.required == false %}?{% endif %}{{association.targetDomainModel.name}} ${{association.mappedBy}};
+    {% elseif association.type == 'One-To-Many_Bidirectional' %}
+
+    /**
+    * One-To-Many_Bidirectional
+    * One {{model.name}} has many {{association.targetDomainModel.name}}s.
+    */
+    #[ORM\OneToMany(mappedBy:"{{association.mappedBy}}",targetEntity: "{{association.targetDomainModel.namespace}}\{{association.targetDomainModel.name}}", fetch:"{{association.fetch}}")]
+    #[ORM\JoinColumn(nullable: {% if association.required %}false{% else %}true{% endif %})]
+    #[ORM\OrderBy(["{{association.orderBy}}" => "{{association.orderDirection}}"])]
+    private {% if association.required == false %}?{% endif %}Collection ${{association.targetDomainModel.name|lower}}s;
+    {% elseif association.type == 'One-To-Many_Self-referencing' %}
+
+    /**
+    * One-To-Many_Self-referencing
+    * One {{model.name}} has many {{association.targetDomainModel.name}}s.
+    */
+    #[ORM\OneToMany(targetEntity: "{{association.targetDomainModel.namespace}}\{{association.targetDomainModel.name}}", mappedBy:"{{association.mappedBy}}", fetch:"{{association.fetch}}")]
+    #[ORM\JoinColumn(nullable: {% if association.required %}false{% else %}true{% endif %})]
+    private {% if association.required == false %}?{% endif %}{{association.targetDomainModel.name}} ${{association.inversedBy}};
+
+    /**
+    * One-To-Many_Self-referencing
+    * One {{model.name}} has many {{association.targetDomainModel.name}}s.
+    */
+    #[ORM\OneToMany(targetEntity: "{{association.targetDomainModel.namespace}}\{{association.targetDomainModel.name}}", inversedBy:"{{association.inversedBy}}", fetch:"{{association.fetch}}")]
+    #[ORM\JoinColumn(nullable: {% if association.required %}false{% else %}true{% endif %})]
+    private {% if association.required == false %}?{% endif %}{{association.targetDomainModel.name}} ${{association.mappedBy}};
+    {% elseif association.type == 'Many-To-Many_Unidirectional' %}
+
+    /**
+    * Many-To-Many_Unidirectional
+    * Many {{model.name}}s have many {{association.targetDomainModel.name}}s.
+    */
+    #[ORM\ManyToMany(targetEntity: "{{association.targetDomainModel.namespace}}\{{association.targetDomainModel.name}}", fetch:"{{association.fetch}}")]
+    #[ORM\JoinColumn(nullable: {% if association.required %}false{% else %}true{% endif %})]
+    private {% if association.required == false %}?{% endif %}Collection ${{association.targetDomainModel.name | lower}}s;
+    {% elseif association.type == 'Many-To-Many_Bidirectional' %}
+
+    /**
+    * Many-To-Many_Bidirectional
+    * Many {{model.name}}s have many {{association.targetDomainModel.name}}s.
+    */
+    #[ORM\ManyToMany(targetEntity: "{{association.targetDomainModel.namespace}}\{{association.targetDomainModel.name}}", fetch:"{{association.fetch}}" {% if association.inverseBy %}, inversedBy:"{{association.inversedBy}}"{% endif %}{% if association.mappedBy  %}, mappedBy:"{{association.mappedBy}}"{% endif %})]
+    #[ORM\JoinColumn(nullable: {% if association.required %}false{% else %}true{% endif %})]
+    private {% if association.required == false %}?{% endif %}Collection ${{association.targetDomainModel.name | lower}}s;
+    {% elseif association.type == 'Many-To-Many_Self-referencing' %}
+
+    /**
+    * Many-To-Many_Self-referencing
+    * Many {{model.name}}s have many {{association.targetDomainModel.name}}s.
+    */
+    #[ORM\ManyToMany(targetEntity:"{{association.targetDomainModel.namespace}}\{{association.targetDomainModel.name}}", mappedBy:"{{association.mappedBy}}", fetch:"{{association.fetch}}")]
+    #[ORM\JoinColumn(nullable: {% if association.required %}false{% else %}true{% endif %})]
+    private {% if association.required == false %}?{% endif %}{{association.targetDomainModel.name}}  ${{association.inversedBy}};
+
+    /**
+    * Many {{model.name}}s have many {{association.targetDomainModel.name}}s.
+    */
+    #[ORM\ManyToMany(targetEntity:"{{association.targetDomainModel.namespace}}\{{association.targetDomainModel.name}}", inverseBy:"{{association.inversedBy}}", fetch:"{{association.fetch}}")]
+    #[ORM\JoinColumn(nullable: {% if association.required %}false{% else %}true{% endif %})]
+    private {% if association.required == false %}?{% endif %}{{association.targetDomainModel.name}} ${{association.mappedBy}};
+    {% endif %}
+{% endfor %}
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Constructor
+    // —————————————————————————————————————————————————————————————————————————
+
+    private function __construct(
+{% for attribute in model.attributes %}
+    {% if attribute.identifier == false and attribute.make %}
+{% if attribute.type == 'integer' %}{% if attribute.identifier == false %}int{% endif %}{% endif %}
+{% if attribute.type == 'float' %}float{% endif %}
+{% if attribute.type == 'boolean' %}bool{% endif %}
+{% if attribute.type == 'string' %}string{% endif %}
+{% if attribute.type == 'text' %}string{% endif %}
+{% if attribute.type == 'uuid' %}Uuid{% endif %}
+{% if attribute.type == 'date' %}\DateTime{% endif %}
+{% if attribute.type == 'date_immutable' %}\DateTimeImmutable{% endif %}
+{% if attribute.type == 'date_time' %}\DateTime{% endif %}
+{% if attribute.type == 'date_time_immutable' %}\DateTimeImmutable{% endif %}
+{% if attribute.type == 'email' %}string{% endif %}
+{% if attribute.type == 'enum' %}{{attribute.enum.name}}{% endif %}
+{% if attribute.type == 'json' %}\stdClass{% endif %}
+{% if attribute.type == 'array' %}array{% endif %} ${{attribute.name}},
+    {% endif %}{% endfor %}
+{% for association in model.associations %}
+    {% if association.make %}
+{% if association.type == 'Many-To-One_Unidirectional' %}{{association.targetDomainModel.name}} ${{association.mappedBy}},{% endif %}
+{% if association.type == 'One-To-One_Unidirectional' %}{{association.targetDomainModel.name}} ${{association.mappedBy}},{% endif %}
+{% if association.type == 'One-To-One_Bidirectional' %}{{association.targetDomainModel.name}} ${{association.targetDomainModel.name | lower}},{% endif %}
+{% if association.type == 'One-To-One_Self-referencing' %}{{association.targetDomainModel.name}} ${{association.mappedBy}},{% endif %}
+{% if association.type == 'One-To-Many_Self-referencing' %}{{association.targetDomainModel.name}} ${{association.mappedBy}},{% endif %}
+    {% endif %}{% endfor %}
+
+    )
+    {
+        // -------------------------------------------------- set the attributes
+{% for attribute in model.attributes %}{% if attribute.identifier == false and attribute.make %}
+        {% if attribute.type == 'enum' %}$this->{{attribute.name}} = ${{attribute.name}}->value;{% else %}$this->{{attribute.name}} = ${{attribute.name}};{% endif %}
+
+{% endif %}
+{% endfor %}
+
+        // ------------------------------------------------ set the associations
+{% for association in model.associations %}
+{% if association.make %}
+        {% if association.type == 'Many-To-One_Unidirectional' %}$this->{{association.mappedBy}} = ${{association.mappedBy}};{% endif %}
+        {% if association.type == 'One-To-One_Unidirectional' %}$this->{{association.mappedBy}} = ${{association.mappedBy}};{% endif %}
+        {% if association.type == 'One-To-One_Bidirectional' %}$this->{{association.targetDomainModel.name | lower}} = \${{association.targetDomainModel.name | lower}};{% endif %}
+        {% if association.type == 'One-To-One_Self-referencing' %}$this->{{association.mappedBy}} = ${{association.mappedBy}};{% endif %}
+        {% if association.type == 'One-To-Many_Self-referencing' %}$this->{{association.mappedBy}} = ${{association.mappedBy}};{% endif %}
+{% endif %}
+{% endfor %}
+
+    }
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Maker and changers
+    // —————————————————————————————————————————————————————————————————————————
+
+    public static function make(
+{% for attribute in model.attributes %}
+    {% if attribute.identifier == false and attribute.make %}
+{% if attribute.type == 'integer' %}{% if attribute.identifier == false %}int{% endif %}{% endif %}
+{% if attribute.type == 'float' %}float{% endif %}
+{% if attribute.type == 'boolean' %}bool{% endif %}
+{% if attribute.type == 'string' %}string{% endif %}
+{% if attribute.type == 'text' %}string{% endif %}
+{% if attribute.type == 'uuid' %}Uuid{% endif %}
+{% if attribute.type == 'date' %}\DateTime{% endif %}
+{% if attribute.type == 'date_immutable' %}\DateTimeImmutable{% endif %}
+{% if attribute.type == 'date_time' %}\DateTime{% endif %}
+{% if attribute.type == 'date_time_immutable' %}\DateTimeImmutable{% endif %}
+{% if attribute.type == 'email' %}string{% endif %}
+{% if attribute.type == 'enum' %}{{attribute.enum.name}}{% endif %}
+{% if attribute.type == 'json' %}\stdClass{% endif %}
+{% if attribute.type == 'array' %}array{% endif %} ${{attribute.name}},
+    {% endif %}
+{% endfor %}
+{% for association in model.associations %}
+    {% if association.make %}
+{% if association.type == 'Many-To-One_Unidirectional' %}{{association.targetDomainModel.name}} ${{association.mappedBy}},{% endif %}
+{% if association.type == 'One-To-One_Unidirectional' %}{{association.targetDomainModel.name}} ${{association.mappedBy}},{% endif %}
+{% if association.type == 'One-To-One_Bidirectional' %}{{association.targetDomainModel.name}} ${{association.targetDomainModel.name | lower}},{% endif %}
+{% if association.type == 'One-To-One_Self-referencing' %}{{association.targetDomainModel.name}} ${{association.mappedBy}},{% endif %}
+{% if association.type == 'One-To-Many_Self-referencing' %}{{association.targetDomainModel.name}} ${{association.mappedBy}},{% endif %}
+    {% endif %}
+{% endfor %}
+
+    ): self
+    {
+        return new self({% for attribute in model.attributes %}
+            {% if attribute.identifier == false and attribute.make %}${{attribute.name}},{% endif %}
+
+{% endfor %}
+    {% for association in model.associations %}
+        {% if association.make %}
+{% if association.type == 'Many-To-One_Unidirectional' %}${{association.mappedBy}},
+{% elseif association.type == 'One-To-One_Unidirectional' %}${{association.mappedBy}},
+{% elseif association.type == 'One-To-One_Bidirectional' %}${{association.targetDomainModel.name | lower}},
+{% elseif association.type == 'One-To-One_Self-referencing' %}${{association.mappedBy}},
+{% elseif association.type == 'One-To-Many_Self-referencing' %}${{association.mappedBy}},
+{% endif %}
+        {% endif %}
+    {% endfor %}
+
+        );
+    }
+
+    public function change(
+{% for attribute in model.attributes %}
+    {% if attribute.identifier == false and attribute.make %}
+{% if attribute.type == 'integer' %}{% if attribute.identifier == false %}int{% endif %}{% endif %}
+{% if attribute.type == 'float' %}float{% endif %}
+{% if attribute.type == 'boolean' %}bool{% endif %}
+{% if attribute.type == 'string' %}string{% endif %}
+{% if attribute.type == 'text' %}string{% endif %}
+{% if attribute.type == 'uuid' %}Uuid{% endif %}
+{% if attribute.type == 'date' %}\DateTime{% endif %}
+{% if attribute.type == 'date_immutable' %}\DateTimeImmutable{% endif %}
+{% if attribute.type == 'date_time' %}\DateTime{% endif %}
+{% if attribute.type == 'date_time_immutable' %}\DateTimeImmutable{% endif %}
+{% if attribute.type == 'email' %}string{% endif %}
+{% if attribute.type == 'enum' %}{{attribute.enum.name}}{% endif %}
+{% if attribute.type == 'json' %}\stdClass{% endif %}
+{% if attribute.type == 'array' %}array{% endif %} ${{attribute.name}},
+    {% endif %}
+{% endfor %}
+{% for association in model.associations %}
+    {% if association.change %}
+{% if association.type == 'Many-To-One_Unidirectional' %}{{association.targetDomainModel.name}} ${{association.mappedBy}},{% endif %}
+{% if association.type == 'One-To-One_Unidirectional' %}{{association.targetDomainModel.name}} ${{association.mappedBy}},{% endif %}
+{% if association.type == 'One-To-One_Bidirectional' %}{{association.targetDomainModel.name}} ${{association.targetDomainModel.name | lower}},{% endif %}
+{% if association.type == 'One-To-One_Self-referencing' %}{{association.targetDomainModel.name}} ${{association.mappedBy}},{% endif %}
+{% if association.type == 'One-To-Many_Self-referencing' %}{{association.targetDomainModel.name}} ${{association.mappedBy}},{% endif %}
+    {% endif %}
+{% endfor %}
+
+    ): void
+    {
+        // -------------------------------------------------- set the attributes
+{% for attribute in model.attributes %}{% if attribute.identifier == false and attribute.change %}
+{% if attribute.type == 'enum' %}$this->{{attribute.name}} = ${{attribute.name}}->value;{% else %}$this->{{attribute.name}} = ${{attribute.name}};{% endif %}
+
+    {% endif %}
+    {% endfor %}
+
+        // ------------------------------------------------ set the associations
+{% for association in model.associations %}
+    {% if association.change %}
+    {% if association.type == 'Many-To-One_Unidirectional' %}$this->{{association.mappedBy}} = ${{association.mappedBy}};{% endif %}
+    {% if association.type == 'One-To-One_Unidirectional' %}$this->{{association.mappedBy}} = ${{association.mappedBy}};{% endif %}
+    {% if association.type == 'One-To-One_Bidirectional' %}$this->{{association.targetDomainModel.name | lower}} = \${{association.targetDomainModel.name | lower}};{% endif %}
+    {% if association.type == 'One-To-One_Self-referencing' %}$this->{{association.mappedBy}} = ${{association.mappedBy}};{% endif %}
+    {% if association.type == 'One-To-Many_Self-referencing' %}$this->{{association.mappedBy}} = ${{association.mappedBy}};{% endif %}
+    {% endif %}
+{% endfor %}
+
+    }
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Other Setters
+    // —————————————————————————————————————————————————————————————————————————
+{% for attribute in model.attributes %}
+    {% if attribute.make == false and attribute.change == false and attribute.identifier == false %}
+
+    public function set{{attribute.name | u.camel.title}}({% if attribute.type == 'integer' %}{% if attribute.identifier == false %}int{% endif %}{% endif %}
+{% if attribute.type == 'float' %}float{% endif %}
+{% if attribute.type == 'boolean' %}bool{% endif %}
+{% if attribute.type == 'string' %}string{% endif %}
+{% if attribute.type == 'text' %}string{% endif %}
+{% if attribute.type == 'uuid' %}Uuid{% endif %}
+{% if attribute.type == 'date' %}\DateTime{% endif %}
+{% if attribute.type == 'date_immutable' %}\DateTimeImmutable{% endif %}
+{% if attribute.type == 'date_time' %}\DateTime{% endif %}
+{% if attribute.type == 'date_time_immutable' %}\DateTimeImmutable{% endif %}
+{% if attribute.type == 'email' %}string{% endif %}
+{% if attribute.type == 'enum' %}{{attribute.enum.name}}{% endif %}
+{% if attribute.type == 'json' %}\stdClass{% endif %}
+{% if attribute.type == 'array' %}array{% endif %} ${{attribute.name}}): void
+    {
+        $this->{{attribute.name}} = ${{attribute.name}};
+    }
+{% endif %}
+{% endfor %}
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Getters
+    // —————————————————————————————————————————————————————————————————————————
+{% for attribute in model.attributes %}
+{% if attribute.type == 'boolean'%}
+
+    public function {{attribute.name}}(): bool
+    {
+        return $this->{{attribute.name}};
+    }
+{% elseif attribute.type == 'uuid'%}
+
+    public function get{{attribute.name|u.camel.title}}(): Uuid
+    {
+        return $this->{{attribute.name}};
+    }
+
+    public function get{{attribute.name|u.camel.title}}AsString(): string
+    {
+        return $this->{{attribute.name}}->toRfc4122();
+    }
+{% elseif attribute.type == 'enum'%}
+
+    public function get{{attribute.name|u.camel.title}}(): {{attribute.enum.name|u.camel.title}}
+    {
+        return {{attribute.enum.name|u.camel.title}}::from($this->{{attribute.name}});
+    }
+
+    public function get{{attribute.name|u.camel.title}}AsString(): string
+    {
+        return $this->{{attribute.name}};
+    }
+{% else %}
+
+    public function get{{attribute.name|u.camel.title}}():{% if attribute.required == false %}?{% endif %}
+{% if attribute.type == 'integer' %}int{% endif %}
+{% if attribute.type == 'float' %}float{% endif %}
+{% if attribute.type == 'string' %}string{% endif %}
+{% if attribute.type == 'text' %}string{% endif %}
+{% if attribute.type == 'email' %}string{% endif %}
+{% if attribute.type == 'array' %}array{% endif %}
+{% if attribute.type == 'simple_array' %}array{% endif %}
+{% if attribute.type == 'json' %}\stdClass{% endif %}
+{% if attribute.type == 'date' %}\DateTime{% endif %}
+{% if attribute.type == 'date_immutable' %}\DateTimeImmutable{% endif %}
+{% if attribute.type == 'date_time' %}\DateTime{% endif %}
+{% if attribute.type == 'date_time_immutable' %}\DateTimeImmutable{% endif %}
+
+    {
+        return $this->{{attribute.name}};
+    }
+{% endif %}
+{% endfor %}
+
+    // —————————————————————————————————————————————————————————————————————————
+    // Other model getters
+    // —————————————————————————————————————————————————————————————————————————
+{% for association in model.associations %}
+    {% if association.type == 'Many-To-One_Unidirectional' %}
+
+    public function get{{association.mappedBy | u.camel.title}}(): {% if not association.required %}?{% endif %}{{association.targetDomainModel.name}}
+    {
+        return $this->{{association.mappedBy}};
+    }
+    {% elseif association.type == 'One-To-One_Unidirectional' %}
+
+    public function get{{association.mappedBy | u.camel.title}}(): {% if not association.required %}?{% endif %}{{association.targetDomainModel.name}}
+    {
+        return $this->{{association.mappedBy}};
+    }
+    {% elseif association.type == 'One-To-One_Bidirectional' %}
+
+    public function get{{association.targetDomainModel.name | u.camel.title}}(): {% if not association.required %}?{% endif %}{{association.targetDomainModel.name}}
+    {
+        return $this->{{association.targetDomainModel.name | lower}};
+    }
+    {% elseif association.type == 'One-To-One_Self-referencing' %}
+
+    public function get{{association.mappedBy | u.camel.title}}(): {% if not association.required %}?{% endif %}self
+    {
+        return $this->{{association.mappedBy}};
+    }
+    {% elseif association.type == 'One-To-Many_Bidirectional' %}
+
+    public function get{{association.targetDomainModel.name | u.camel.title}}s(): array
+    {
+        return $this->{{association.targetDomainModel.name | lower}}s->getValues();
+    }
+    {% elseif association.type == 'One-To-Many_Self-referencing' %}
+
+    public function get{{association.inversedBy | u.camel.title}}(): array
+    {
+        return $this->{{association.inversedBy}}->getValues();
+    }
+
+    public function get{{association.mappedBy | u.camel.title}}(): {% if not association.required %}?{% endif %}self
+    {
+        return $this->{{association.mappedBy}};
+    }
+    {% elseif association.type == 'Many-To-Many_Unidirectional' %}
+
+    public function get{{association.targetDomainModel.name | u.camel.title}}s(): array
+    {
+        return $this->{{association.targetDomainModel.name | lower}}s->getValues();
+    }
+    {% elseif association.type == 'Many-To-Many_Bidirectional' %}
+
+    public function get{{association.targetDomainModel.name | u.camel.title}}s(): array
+    {
+        return $this->{{association.targetDomainModel.name | lower}}s->getValues();
+    }
+    {% elseif association.type == 'Many-To-Many_Self-referencing' %}
+
+    public function get{{association.mappedBy | u.camel.title}}(): array
+    {
+        return $this->{{association.mappedBy}}->getValues();
+    }
+
+    public function get{{association.inversedBy | u.camel.title}}(): array
+    {
+        return $this->{{association.inversedBy}}->getValues();
+    }
+    {% endif %}
+{% endfor %}
+
+}

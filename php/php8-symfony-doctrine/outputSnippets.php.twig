@@ -1,0 +1,51 @@
+// ------------------------------------------------------------------ controller
+
+// —————————————————————————————————————————————————————————————————————————————
+// —— {{model.domainModel.name}}s (output)
+// —————————————————————————————————————————————————————————————————————————————
+
+#[Route('/api/{{model.domainModel.name | u.snake.lower }}', methods: ['GET'])]
+public function get{{model.domainModel.name | u.camel.title}}s(Request $request)
+{
+    $response = $this->queryBus->getAll{{model.domainModel.name | u.camel.title}}s();
+    return new JsonResponse($response, 200, $this->apiAccess);
+}
+
+#[Route('/api/{{model.domainModel.name | u.snake.lower }}/{id}', requirements: ['id' => '\d+'], methods: ['GET'])]
+public function get{{model.domainModel.name | u.camel.title}}ById(int $id, Request $request)
+{
+    $response = $this->queryBus->get{{model.domainModel.name | u.camel.title}}ById($id);
+    return new JsonResponse($response, 200, $this->apiAccess);
+}
+
+#[Route('/api/{{model.domainModel.name | u.snake.lower }}/{uuid}', requirements: ['uuid' => '[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}'], methods: ['GET'])]
+public function get{{model.domainModel.name | u.camel.title}}ByUuid(string $uuid, Request $request)
+{
+    $response = $this->queryBus->get{{model.domainModel.name | u.camel.title}}ByUuid($uuid);
+    return new JsonResponse($response, 200, $this->apiAccess);
+}
+
+
+// ------------------------------------------------------------------- query bus
+
+// —————————————————————————————————————————————————————————————————————————————
+// —— {{model.domainModel.name}}s
+// —————————————————————————————————————————————————————————————————————————————
+
+public function getAll{{model.domainModel.name | u.camel.title}}s(): {{model.name}}Collection
+{
+    $query = new Get{{model.domainModel.name | u.camel.title}}($this->{{model.domainModel.name | lower}}Repo);
+    return $query->All();
+}
+
+public function get{{model.domainModel.name | u.camel.title}}ById(int $id): {{model.name}}
+{
+    $query = new Get{{model.domainModel.name | u.camel.title}}($this->{{model.domainModel.name | lower}}Repo);
+    return $query->ById($id);
+}
+
+public function get{{model.domainModel.name | u.camel.title}}ByUuid(string $uuid): {{model.name}}
+{
+    $query = new Get{{model.domainModel.name | u.camel.title}}($this->{{model.domainModel.name | lower}}Repo);
+    return $query->ByUuid($uuid);
+}
