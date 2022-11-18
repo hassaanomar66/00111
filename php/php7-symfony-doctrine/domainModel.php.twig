@@ -2,11 +2,11 @@
 
 namespace {{ model.namespace }};
 
-use Doctrine\\ORM\\Mapping as ORM;
-use Assert\\Assertion;
+use Doctrine\ORM\Mapping as ORM;
+use Assert\Assertion;
 
 /**
- * @ORM\\Entity(repositoryClass="{{ model.repository }}\\{{ model.name }}Repository")
+ * @ORM\Entity(repositoryClass="{{ model.repository }}\{{ model.name }}Repository")
  */
 class {{ model.name }} {
 
@@ -14,100 +14,100 @@ class {{ model.name }} {
     {% for field in model.fields %}
 {% if field.type == 'integer' and field.identifier == true %}
 /**
-     * @ORM\\Id()
-     * @ORM\\Column(type="integer")
-     * @ORM\\GeneratedValue(strategy="AUTO")
+     * @ORM\Id()
+     * @ORM\Column(type="integer")
+     * @ORM\GeneratedValue(strategy="AUTO")
      */
 {% endif %}
 {% if field.type == 'integer' and field.identifier == false %}
 /**
      * @var integer{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="integer", nullable={% if field.required%}false{% else %}true{% endif %})
+     * @ORM\Column(type="integer", nullable={% if field.required%}false{% else %}true{% endif %})
      */
 {% endif %}
 {% if field.type == 'string' or field.type == 'email' %}
 /**
      * @var string{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="string", length={{field.length}}, nullable={% if field.required%}false{% else %}true{% endif %})
+     * @ORM\Column(type="string", length={{field.length}}, nullable={% if field.required%}false{% else %}true{% endif %})
      */
 {% endif %}
 {% if field.type == 'uuid' %}
 /**
      * @var string{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="guid", length={{field.length}}, nullable={% if field.required%}false{% else %}true{% endif %})
+     * @ORM\Column(type="guid", length={{field.length}}, nullable={% if field.required%}false{% else %}true{% endif %})
      */
 {% endif %}
 {% if field.type == 'boolean' %}
 /**
      * @var boolean{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="boolean", nullable={% if field.required%}false{% else %}true{% endif %}, options={"default":false})
+     * @ORM\Column(type="boolean", nullable={% if field.required%}false{% else %}true{% endif %}, options={"default":false})
      */
 {% endif %}
 {% if field.type == 'text' %}
 /**
      * @var string{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="text", nullable={% if field.required %}false{% else %}true{% endif %})
+     * @ORM\Column(type="text", nullable={% if field.required %}false{% else %}true{% endif %})
      */
 {% endif %}
 {% if field.type == 'float' %}
 /**
      * @var float{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="float", nullable={% if field.required%}false{% else %}true{% endif %})
+     * @ORM\Column(type="float", nullable={% if field.required%}false{% else %}true{% endif %})
      */
 {% endif %}
 {% if field.type == 'date' %}
 /**
      * @var DateTime{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="date", nullable={% if field.required%}false{% else %}true{% endif %})
+     * @ORM\Column(type="date", nullable={% if field.required%}false{% else %}true{% endif %})
      */
 {% endif %}
 {% if field.type == 'date_immutable' %}
 /**
      * @var DateTimeImmutable{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="date_immutable", nullable={% if field.required%}false{% else %}true{% endif %})
+     * @ORM\Column(type="date_immutable", nullable={% if field.required%}false{% else %}true{% endif %})
      */
 {% endif %}
 {% if field.type == 'date_time' %}
 /**
      * @var Datetime{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="date_time", nullable={% if field.required%}false{% else %}true{% endif %})
+     * @ORM\Column(type="date_time", nullable={% if field.required%}false{% else %}true{% endif %})
      */
 {% endif %}
 {% if field.type == 'date_time_immutable' %}
 /**
      * @var DateTimeImmutable{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="date_time_immutable", nullable={% if field.required%}false{% else %}true{% endif %})
+     * @ORM\Column(type="date_time_immutable", nullable={% if field.required%}false{% else %}true{% endif %})
      */
 {% endif %}
 {% if field.type == 'array' %}
 /**
      * @var array{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="array", nullable={% if field.required%}false{% else %}true{% endif %})
+     * @ORM\Column(type="array", nullable={% if field.required%}false{% else %}true{% endif %})
      */
 {% endif %}
 {% if field.type == 'simple_array' %}
 /**
      * @var array{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="simple_array", nullable={% if field.required%}false{% else %}true{% endif %})
+     * @ORM\Column(type="simple_array", nullable={% if field.required%}false{% else %}true{% endif %})
      */
 {% endif %}
 {% if field.type == 'json' %}
 /**
      * @var array{% if not field.required %}|null{% endif %}
 
-     * @ORM\\Column(type="json", nullable={% if field.required%}false{% else %}true{% endif %})
+     * @ORM\Column(type="json", nullable={% if field.required%}false{% else %}true{% endif %})
      */
 {% endif %}
     private \${{field.name}};
@@ -120,12 +120,12 @@ class {{ model.name }} {
     /**
      * Many-To-One_Unidirectional
      * Many {{relation.domainModel.name}}s has one {{relation.targetDomainModel.name}}.
-     * @ORM\\ManyToOne(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}"
+     * @ORM\ManyToOne(targetEntity="{{relation.targetDomainModel.namespace}}\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}"
 {% if relation.inversedBy %}
      *      , inversedBy="{{relation.inversedBy}}"
 {% endif %}
      * )
-     * @ORM\\JoinColumn(nullable=true)
+     * @ORM\JoinColumn(nullable=true)
      */
     private \${{relation.mappedBy}};
 
@@ -133,8 +133,8 @@ class {{ model.name }} {
     /**
      * One-To-One_Unidirectional
      * One {{relation.domainModel.name}} has one {{relation.targetDomainModel.name}}.
-     * @ORM\\ManyToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}")
-     * @ORM\\JoinColumn(nullable=true)
+     * @ORM\ManyToMany(targetEntity="{{relation.targetDomainModel.namespace}}\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}")
+     * @ORM\JoinColumn(nullable=true)
      */
     private \${{relation.mappedBy}};
 
@@ -142,14 +142,14 @@ class {{ model.name }} {
     /**
      * One-To-One_Bidirectional
      * One {{relation.domainModel.name}} has one {{relation.targetDomainModel.name}}.
-     * @ORM\\ManyToMany(
-     *      targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}"
+     * @ORM\ManyToMany(
+     *      targetEntity="{{relation.targetDomainModel.namespace}}\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}"
      {% if relation.inversedBy %}
 *      , inversedBy="{{relation.inversedBy}}"
      {% endif %}{% if relation.mappedBy  %}
 *      , mappedBy="{{relation.mappedBy}}"
      {% endif %}
-* @ORM\\JoinColumn(nullable=true)
+* @ORM\JoinColumn(nullable=true)
      * )
      */
     private \${{relation.targetDomainModel.name|lower}};
@@ -158,8 +158,8 @@ class {{ model.name }} {
     /**
      * One-To-One_Self-referencing
      * One {{relation.domainModel.name}} has one {{relation.targetDomainModel.name}}.
-     * @ORM\\OneToOne(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}")
-     * @ORM\\JoinColumn(nullable=true)
+     * @ORM\OneToOne(targetEntity="{{relation.targetDomainModel.namespace}}\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}")
+     * @ORM\JoinColumn(nullable=true)
      */
     private \${{relation.mappedBy}};
 
@@ -167,9 +167,9 @@ class {{ model.name }} {
     /**
      * One-To-Many_Bidirectional
      * One {{relation.domainModel.name}} has many {{relation.targetDomainModel.name}}s.
-     * @ORM\\OneToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", mappedBy="{{relation.mappedBy}}", fetch="{{relation.fetch}}")
-     * @ORM\\OrderBy({"{{relation.orderBy}}" = "{{relation.orderDirection}}"})
-     * @ORM\\JoinColumn(nullable=true)
+     * @ORM\OneToMany(targetEntity="{{relation.targetDomainModel.namespace}}\{{relation.targetDomainModel.name}}", mappedBy="{{relation.mappedBy}}", fetch="{{relation.fetch}}")
+     * @ORM\OrderBy({"{{relation.orderBy}}" = "{{relation.orderDirection}}"})
+     * @ORM\JoinColumn(nullable=true)
      */
      private \${{relation.targetDomainModel.name|lower}}s;
 
@@ -177,16 +177,16 @@ class {{ model.name }} {
     /**
      * One-To-Many_Self-referencing
      * One {{relation.domainModel.name}} has many {{relation.targetDomainModel.name}}s.
-     * @ORM\\OneToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", mappedBy="{{relation.mappedBy}}", fetch="{{relation.fetch}}")
-     * @ORM\\JoinColumn(nullable=true)
+     * @ORM\OneToMany(targetEntity="{{relation.targetDomainModel.namespace}}\{{relation.targetDomainModel.name}}", mappedBy="{{relation.mappedBy}}", fetch="{{relation.fetch}}")
+     * @ORM\JoinColumn(nullable=true)
      */
      private \${{relation.inversedBy}};
 
      /**
      * One-To-Many_Self-referencing
      * One {{relation.domainModel.name}} has many {{relation.targetDomainModel.name}}s.
-     * @ORM\\OneToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", inversedBy="{{relation.inversedBy}}", fetch="{{relation.fetch}}")
-     * @ORM\\JoinColumn(nullable=true)
+     * @ORM\OneToMany(targetEntity="{{relation.targetDomainModel.namespace}}\{{relation.targetDomainModel.name}}", inversedBy="{{relation.inversedBy}}", fetch="{{relation.fetch}}")
+     * @ORM\JoinColumn(nullable=true)
      */
      private \${{relation.mappedBy}};
 
@@ -194,8 +194,8 @@ class {{ model.name }} {
     /**
      * Many-To-Many_Unidirectional
      * Many {{relation.domainModel.name}}s have many {{relation.targetDomainModel.name}}s.
-     * @ORM\\ManyToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}")
-     * @ORM\\JoinColumn(nullable=true)
+     * @ORM\ManyToMany(targetEntity="{{relation.targetDomainModel.namespace}}\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}")
+     * @ORM\JoinColumn(nullable=true)
      */
      private \${{relation.targetDomainModel.name | lower}}s;
 
@@ -203,14 +203,14 @@ class {{ model.name }} {
     /**
      * Many-To-Many_Bidirectional
      * Many {{relation.domainModel.name}}s have many {{relation.targetDomainModel.name}}s.
-     * @ORM\\ManyToMany(
-     *      targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}"
+     * @ORM\ManyToMany(
+     *      targetEntity="{{relation.targetDomainModel.namespace}}\{{relation.targetDomainModel.name}}", fetch="{{relation.fetch}}"
      {% if relation.inverseBy %}
 *      , inversedBy="{{relation.inversedBy}}"
      {% endif %}{% if relation.mappedBy  %}
 *      , mappedBy="{{relation.mappedBy}}"
      {% endif %}
-* @ORM\\JoinColumn(nullable=true)
+* @ORM\JoinColumn(nullable=true)
     * )
      */
     private \${{relation.targetDomainModel.name | lower}}s;
@@ -219,15 +219,15 @@ class {{ model.name }} {
     /**
      * Many-To-Many_Self-referencing
      * Many {{relation.domainModel.name}}s have many {{relation.targetDomainModel.name}}s.
-     * @ORM\\ManyToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", mappedBy="{{relation.mappedBy}}", fetch="{{relation.fetch}}")
-     * @ORM\\JoinColumn(nullable=true)
+     * @ORM\ManyToMany(targetEntity="{{relation.targetDomainModel.namespace}}\{{relation.targetDomainModel.name}}", mappedBy="{{relation.mappedBy}}", fetch="{{relation.fetch}}")
+     * @ORM\JoinColumn(nullable=true)
      */
     private \${{relation.inversedBy}};
 
     /**
      * Many {{relation.domainModel.name}}s have many {{relation.targetDomainModel.name}}s.
-     * @ORM\\ManyToMany(targetEntity="{{relation.targetDomainModel.namespace}}\\{{relation.targetDomainModel.name}}", inverseBy="{{relation.inversedBy}}", fetch="{{relation.fetch}}")
-     * @ORM\\JoinColumn(nullable=true)
+     * @ORM\ManyToMany(targetEntity="{{relation.targetDomainModel.namespace}}\{{relation.targetDomainModel.name}}", inverseBy="{{relation.inversedBy}}", fetch="{{relation.fetch}}")
+     * @ORM\JoinColumn(nullable=true)
      */
     private \${{relation.mappedBy}};
 

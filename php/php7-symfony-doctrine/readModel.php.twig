@@ -2,7 +2,7 @@
 
 namespace {{ model.namespace }};
 
-class {{ model.name }} implements \\JsonSerializable
+class {{ model.name }} implements \JsonSerializable
 {
     {% for mapping in model.mapping %}
 /* @var {{mapping.type}} */
@@ -29,7 +29,7 @@ class {{ model.name }} implements \\JsonSerializable
 
 public function jsonSerialize()
 {
-$json = new \\stdClass();
+$json = new \stdClass();
 {% for mapping in model.mapping %}
     $json->{{mapping.name}} = $this->get{{mapping.name | capitalize}}();
 {% endfor %}return $json;

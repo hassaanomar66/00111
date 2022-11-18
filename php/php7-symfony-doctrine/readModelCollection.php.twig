@@ -2,7 +2,7 @@
 
 namespace {{ model.namespace }};
 
-class {{ model.name }}Collection implements \\JsonSerializable
+class {{ model.name }}Collection implements \JsonSerializable
 {
     /** @var {{model.name}}[] */
     private $collection;
@@ -22,7 +22,7 @@ class {{ model.name }}Collection implements \\JsonSerializable
 
 public function jsonSerialize()
 {
-$json = new \\stdClass();
+$json = new \stdClass();
 $json->collection = $this->getCollection();
 return $json;
 }
